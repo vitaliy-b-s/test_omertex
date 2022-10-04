@@ -57,11 +57,26 @@ const DnsSettings = forwardRef((props, ref) => {
           preferredDns: "",
           alternativeDns: "",
         };
-      } else if (!validateDNS("automatic") && !validateDNS("preferred")) {
-        return null;
-      } else {
-        return dnsSettings;
       }
+
+      const isPreferredValid = validateDNS("preferred");
+      const isAlternativeValid = validateDNS("alternative");
+
+      if (isAlternativeValid && isPreferredValid) {
+        return dnsSettings;
+      } else {
+        return false;
+      }
+    },
+
+    clearForm() {
+      setDnsSettings({
+        dnsType: "automatic",
+        preferredDns: "",
+        alternativeDns: "",
+      });
+      setAlternativeDnsError(false);
+      setPreferredDnsError(false);
     },
   }));
 
@@ -70,14 +85,18 @@ const DnsSettings = forwardRef((props, ref) => {
       <RadioGroup
         defaultValue="automatic"
         name="radio-buttons-group"
-        onChange={(event, value) =>
+        onChange={(event, value) => {
+          if (value === "automatic") {
+            setPreferredDnsError(false);
+            setAlternativeDnsError(false);
+          }
           setDnsSettings((prevState) => {
             return {
               ...prevState,
               dnsType: value,
             };
-          })
-        }
+          });
+        }}
       >
         <FormControlLabel
           value="automatic"

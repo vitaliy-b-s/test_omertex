@@ -33,6 +33,7 @@ const IpSettings = forwardRef((props, ref) => {
     }
     return isValid;
   };
+
   const validateSubnetData = () => {
     const isValid = validateSubnet(ipSettings.subnetMask);
     if (!isValid) {
@@ -52,11 +53,26 @@ const IpSettings = forwardRef((props, ref) => {
           subnetMask: "",
           defaultGateway: "",
         };
-      } else if (!validateSubnetData() && !validateIPData()) {
-        return null;
-      } else {
-        return ipSettings;
       }
+
+      const isIPValid = validateIPData();
+      const isSubnetValid = validateSubnetData();
+
+      if (isIPValid && isSubnetValid) {
+        return ipSettings;
+      } else {
+        return false;
+      }
+    },
+    clearForm() {
+      setIpSettings({
+        ipType: "automatic",
+        ipAddress: "",
+        subnetMask: "",
+        defaultGateway: "",
+      });
+      setSubnetError(false);
+      setIpError(false);
     },
   }));
 
@@ -66,6 +82,10 @@ const IpSettings = forwardRef((props, ref) => {
         defaultValue="automatic"
         name="radio-buttons-group"
         onChange={(event, value) => {
+          if (value === "automatic") {
+            setIpError(false);
+            setSubnetError(false);
+          }
           setIpSettings((prevState) => {
             return {
               ...prevState,

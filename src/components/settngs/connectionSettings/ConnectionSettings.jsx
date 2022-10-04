@@ -19,7 +19,24 @@ const ConnectionSettings = (props) => {
     settings.ethernetSettings = ethernetRef.current.getInfo();
     settings.wifiSettings = wifiRef.current.getInfo();
 
-    console.log(settings);
+    const isEthernetSettingsValid = Boolean(
+      settings.ethernetSettings.ipSettings &&
+        settings.ethernetSettings.dnsSettings
+    );
+    const isWifiSettingsValid = Boolean(
+      settings.wifiSettings.ipSettings && settings.wifiSettings.dnsSettings
+    );
+
+    if (isEthernetSettingsValid && isWifiSettingsValid) {
+      console.log(settings);
+    } else {
+      console.log("Invalid Data");
+    }
+  };
+
+  const clearForm = () => {
+    ethernetRef.current.clear();
+    wifiRef.current.clear();
   };
 
   return (
@@ -34,7 +51,7 @@ const ConnectionSettings = (props) => {
           <WifiSettings ref={wifiRef} />
         </div>
       </div>
-      <Footer submit={submitForm} />
+      <Footer submit={submitForm} clear={clearForm} />
     </>
   );
 };

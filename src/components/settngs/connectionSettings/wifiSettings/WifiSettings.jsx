@@ -1,8 +1,8 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Checkbox, FormControlLabel, TextField } from "@mui/material";
+
 import IpSettings from "../../ipSettings/IpSettings";
 import DnsSettings from "../../dnsSettings/DnsSettings";
-import dnsSettings from "../../dnsSettings/DnsSettings";
 
 const WifiSettings = forwardRef((props, ref) => {
   const [isWifiEnabled, setIsWifiEnabled] = useState(true);
@@ -29,13 +29,21 @@ const WifiSettings = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     getInfo() {
-      if (isWifiEnabled) {
-        return null;
-      } else {
+      if (!isWifiEnabled) {
         wifiSettings.ipSettings = ipRef.current.processData();
         wifiSettings.dnsSettings = dnsRef.current.processData();
-        return wifiSettings;
       }
+      return wifiSettings;
+    },
+    clear() {
+      ipRef.current.clearForm();
+      dnsRef.current.clearForm();
+      setWifiSettings({
+        networkName: "",
+        networkPassword: "",
+        ipSettings: {},
+        dnsSettings: {},
+      });
     },
   }));
 
@@ -49,6 +57,7 @@ const WifiSettings = forwardRef((props, ref) => {
         <TextField
           size={"small"}
           label={"Wireless network name:"}
+          value={wifiSettings.networkName}
           required
           style={{ margin: "10px" }}
           disabled={isWifiEnabled}
@@ -69,6 +78,8 @@ const WifiSettings = forwardRef((props, ref) => {
         <TextField
           size={"small"}
           label={"Security Key:"}
+          type={"password"}
+          value={wifiSettings.networkPassword}
           required
           style={{ margin: "10px" }}
           disabled={isSecurityEnabled}

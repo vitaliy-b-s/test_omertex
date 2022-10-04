@@ -2,7 +2,6 @@ import IpSettings from "../../ipSettings/IpSettings";
 import DnsSettings from "../../dnsSettings/DnsSettings";
 
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import { validateIp, validateSubnet } from "../../../../helpers/validation";
 
 const EthernetSettings = forwardRef((props, ref) => {
   const ethernetSettings = {
@@ -18,6 +17,12 @@ const EthernetSettings = forwardRef((props, ref) => {
       ethernetSettings.ipSettings = ipRef.current.processData();
       ethernetSettings.dnsSettings = dnsRef.current.processData();
       return ethernetSettings;
+    },
+    clear() {
+      ethernetSettings.dnsSettings = {};
+      ethernetSettings.ipSettings = {};
+      ipRef.current.clearForm();
+      dnsRef.current.clearForm();
     },
   }));
 

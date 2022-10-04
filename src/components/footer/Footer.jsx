@@ -16,6 +16,7 @@ const Footer = (props) => {
         <Button
           style={{ borderRadius: "50px", width: "100px", marginLeft: "10px" }}
           variant={"outlined"}
+          onClick={() => props.clear()}
         >
           Cancel
         </Button>
