@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Checkbox, FormControlLabel, TextField } from "@mui/material";
-import IpSettings from "../ipSettings/IpSettings";
-import DnsSettings from "../dnsSettings/DnsSettings";
+import IpSettings from "../../ipSettings/IpSettings";
+import DnsSettings from "../../dnsSettings/DnsSettings";
+import dnsSettings from "../../dnsSettings/DnsSettings";
 
-const WifiSettings = () => {
+const WifiSettings = forwardRef((props, ref) => {
   const [isWifiEnabled, setIsWifiEnabled] = useState(true);
   const [isSecurityEnabled, setIsSecurityEnabled] = useState(true);
   const [wifiSettings, setWifiSettings] = useState({
     networkName: "",
     networkPassword: "",
+    ipSettings: {},
+    dnsSettings: {},
   });
+
+  const ipRef = useRef(null);
+  const dnsRef = useRef(null);
 
   const handleInput = (event) => {
     const { name, value } = event.target;
@@ -20,6 +26,18 @@ const WifiSettings = () => {
       };
     });
   };
+
+  useImperativeHandle(ref, () => ({
+    getInfo() {
+      if (isWifiEnabled) {
+        return null;
+      } else {
+        wifiSettings.ipSettings = ipRef.current.processData();
+        wifiSettings.dnsSettings = dnsRef.current.processData();
+        return wifiSettings;
+      }
+    },
+  }));
 
   return (
     <div>
@@ -58,10 +76,10 @@ const WifiSettings = () => {
           onChange={handleInput}
         />
       </div>
-      <IpSettings isDisabled={isWifiEnabled} />
-      <DnsSettings isDisabled={isWifiEnabled} />
+      <IpSettings isDisabled={isWifiEnabled} ref={ipRef} />
+      <DnsSettings isDisabled={isWifiEnabled} ref={dnsRef} />
     </div>
   );
-};
+});
 
 export default WifiSettings;

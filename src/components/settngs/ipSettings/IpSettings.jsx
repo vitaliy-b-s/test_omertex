@@ -1,14 +1,10 @@
 import styles from "./ipSettings.module.css";
 
 import { FormControlLabel, Radio, RadioGroup, TextField } from "@mui/material";
-import { forwardRef, useState } from "react";
-
-import { isIP } from "is-ip";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { validateIp, validateSubnet } from "../../../helpers/validation";
 
 const IpSettings = forwardRef((props, ref) => {
-  const SUBNET_REGEX =
-    /^(?:\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(?:\.(?:\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/;
-
   const [ipSettings, setIpSettings] = useState({
     ipType: "automatic",
     ipAddress: "",
@@ -28,25 +24,41 @@ const IpSettings = forwardRef((props, ref) => {
     });
   };
 
-  const validateIp = (ip) => {
-    if (ip === "") {
-      setIpError(false);
-    } else if (!isIP(ip)) {
+  const validateIPData = () => {
+    const isValid = validateIp(ipSettings.ipAddress);
+    if (!isValid) {
       setIpError(true);
     } else {
       setIpError(false);
     }
+    return isValid;
   };
-
-  const validateSubnet = (subnet) => {
-    if (subnet === "") {
-      setSubnetError(false);
-    } else if (!subnet.match(SUBNET_REGEX)) {
+  const validateSubnetData = () => {
+    const isValid = validateSubnet(ipSettings.subnetMask);
+    if (!isValid) {
       setSubnetError(true);
     } else {
       setSubnetError(false);
     }
+    return isValid;
   };
+
+  useImperativeHandle(ref, () => ({
+    processData() {
+      if (ipSettings.ipType === "automatic") {
+        return {
+          ipType: "automatic",
+          ipAddress: "",
+          subnetMask: "",
+          defaultGateway: "",
+        };
+      } else if (!validateSubnetData() && !validateIPData()) {
+        return null;
+      } else {
+        return ipSettings;
+      }
+    },
+  }));
 
   return (
     <div>
@@ -81,10 +93,7 @@ const IpSettings = forwardRef((props, ref) => {
           style={{ margin: "10px" }}
           disabled={ipSettings.ipType === "automatic"}
           name={"ipAddress"}
-          onChange={(event) => {
-            handleInput(event);
-            validateIp(event.target.value);
-          }}
+          onChange={handleInput}
           error={ipError}
         />
         <TextField
@@ -94,10 +103,7 @@ const IpSettings = forwardRef((props, ref) => {
           style={{ margin: "10px" }}
           disabled={ipSettings.ipType === "automatic"}
           name={"subnetMask"}
-          onChange={(event) => {
-            handleInput(event);
-            validateSubnet(event.target.value);
-          }}
+          onChange={handleInput}
           error={subnetError}
         />
         <TextField

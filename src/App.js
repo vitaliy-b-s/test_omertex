@@ -1,6 +1,6 @@
 import "./App.css";
 
-import ConnectionSettings from "./components/connectionSettings/ConnectionSettings";
+import ConnectionSettings from "./components/settngs/connectionSettings/ConnectionSettings";
 
 const App = () => {
   return (

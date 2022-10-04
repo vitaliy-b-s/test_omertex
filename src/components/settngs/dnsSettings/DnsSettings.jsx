@@ -1,9 +1,13 @@
 import styles from "./dnsSettings.module.css";
 
-import { forwardRef, useState } from "react";
+import {
+  forwardRef,
+  isValidElement,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { FormControlLabel, Radio, RadioGroup, TextField } from "@mui/material";
-
-import { isIP } from "is-ip";
+import { validateIp } from "../../../helpers/validation";
 
 const DnsSettings = forwardRef((props, ref) => {
   const [dnsSettings, setDnsSettings] = useState({
@@ -11,6 +15,7 @@ const DnsSettings = forwardRef((props, ref) => {
     preferredDns: "",
     alternativeDns: "",
   });
+
   const [preferredDnsError, setPreferredDnsError] = useState(false);
   const [alternativeDnsError, setAlternativeDnsError] = useState(false);
 
@@ -24,25 +29,41 @@ const DnsSettings = forwardRef((props, ref) => {
     });
   };
 
-  const validatePreferredDns = (dns) => {
-    if (dns === "") {
-      setPreferredDnsError(false);
-    } else if (!isIP(dns)) {
-      setPreferredDnsError(true);
+  const validateDNS = (type) => {
+    if (type === "preferred") {
+      const isValid = validateIp(dnsSettings.preferredDns);
+      if (!isValid) {
+        setPreferredDnsError(true);
+      } else {
+        setPreferredDnsError(false);
+      }
+      return isValid;
     } else {
-      setPreferredDnsError(false);
+      const isValid = validateIp(dnsSettings.alternativeDns);
+      if (!isValid) {
+        setAlternativeDnsError(true);
+      } else {
+        setAlternativeDnsError(false);
+      }
+      return isValid;
     }
   };
 
-  const validateAlternativeDns = (dns) => {
-    if (dns === "") {
-      setAlternativeDnsError(false);
-    } else if (!isIP(dns)) {
-      setAlternativeDnsError(true);
-    } else {
-      setAlternativeDnsError(false);
-    }
-  };
+  useImperativeHandle(ref, () => ({
+    processData() {
+      if (dnsSettings.dnsType === "automatic") {
+        return {
+          dnsType: "automatic",
+          preferredDns: "",
+          alternativeDns: "",
+        };
+      } else if (!validateDNS("automatic") && !validateDNS("preferred")) {
+        return null;
+      } else {
+        return dnsSettings;
+      }
+    },
+  }));
 
   return (
     <div>
@@ -78,10 +99,7 @@ const DnsSettings = forwardRef((props, ref) => {
           style={{ margin: "10px" }}
           disabled={dnsSettings.dnsType === "automatic"}
           value={dnsSettings.preferredDns}
-          onChange={(event) => {
-            handleInput(event);
-            validatePreferredDns(event.target.value);
-          }}
+          onChange={handleInput}
           error={preferredDnsError}
         />
         <TextField
@@ -91,10 +109,7 @@ const DnsSettings = forwardRef((props, ref) => {
           style={{ margin: "10px" }}
           disabled={dnsSettings.dnsType === "automatic"}
           value={dnsSettings.alternativeDns}
-          onChange={(event) => {
-            handleInput(event);
-            validateAlternativeDns(event.target.value);
-          }}
+          onChange={handleInput}
           error={alternativeDnsError}
         />
       </div>
